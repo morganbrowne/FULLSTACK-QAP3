@@ -13,6 +13,10 @@
             <label for="password">Password:</label>
             <input type="password" name="password" id="password" required>
         </div>
+        <% if (error) { %>
+            <p class = "error-message"><%= error %>/p>
+
+       <% } %>
         <button type="submit">Sign Up</button>
     </form>
     <p><a href="/">Go back</a></p>

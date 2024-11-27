@@ -46,17 +46,42 @@ app.get("/login", (request, response) => {
 
 // POST /login - Allows a user to login
 app.post("/login", (request, response) => {
+    const { email, password } = request.body;
+    const user = USERS.find((u) => u.email === email);
+
+    if (!user || !bcrypt.compareSync(password, user.password)) {
+        return response.render("login", {error: "Invalid email or pssword"});
+    }
+
+    request.session.user = {id: user.id, username: user.username, role: user.role };
+    response.redirect("/landing");
 
 });
 
 // GET /signup - Render signup form
 app.get("/signup", (request, response) => {
-    response.render("signup");
+    response.render("signup", {error: null});
 });
 
 // POST /signup - Allows a user to signup
 app.post("/signup", (request, response) => {
+    const { username, email, password} = request.body;
+
+    if (!username || !email || !password ) {
+        return response.render("Signup", {error: "All feilds required to Sign Up"});
+    }
     
+    // added userExists for duplicate emails... 
+    const userExists = USERS.find((u) => u.email === email);
+    if (userExists) {
+        return response.render("Signup", {error: "Email is already in use."});
+    }
+    //Hash passwords with bcrypt... 
+    const hashedPassword = bcrypt.hashSync(password, SALT_ROUNDS);
+    USERS.push({ id: USERS.length +1, username, email, password: hashedPassword, role: "user" });
+
+    response.redirect("/login");
+
 });
 
 // GET / - Render index page or redirect to landing if logged in
@@ -72,6 +97,7 @@ app.get("/landing", (request, response) => {
     
 });
 
+console.log(USERS);
 // Start server
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
