@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const session = require("express-session");
 const bcrypt = require('bcrypt');
+const { request } = require("http");
 
 const app = express();
 const PORT = 3000;
@@ -39,6 +40,24 @@ const USERS = [
     },
 ];
 
+// Authentication Middleware... 
+
+const isAuthenticated = (req, res, next) => {
+    if (req.session.user) return next();
+    res.redirect("/login");
+}
+
+const isAdmin = (req, res, next) => {
+    if (req.session.user?.role === "admin") return next();
+    res.redirect("/landing");
+}
+
+// Admin Route for adminLanding.ejs... 
+
+app.get("/admin", isAuthenticated, isAdmin, (req, res) => {
+    res.render("adminLanding", { users: USERS});
+});
+
 // GET /login - Render login form
 app.get("/login", (request, response) => {
     response.render("login");
@@ -50,11 +69,14 @@ app.post("/login", (request, response) => {
     const user = USERS.find((u) => u.email === email);
 
     if (!user || !bcrypt.compareSync(password, user.password)) {
-        return response.render("login", {error: "Invalid email or pssword"});
+        request.session.user = user;
+        return response.redirect("landing");
+        //return response.render("login", {error: "Invalid email or pssword"});
     }
+    response.render("login", {error: "Invalid email or password"});
 
-    request.session.user = {id: user.id, username: user.username, role: user.role };
-    response.redirect("/landing");
+    // request.session.user = {id: user.id, username: user.username, role: user.role };
+    // response.redirect("/landing");
 
 });
 
@@ -93,8 +115,29 @@ app.get("/", (request, response) => {
 });
 
 // GET /landing - Shows a welcome page for users, shows the names of all users if an admin
-app.get("/landing", (request, response) => {
+app.get("/landing", isAuthenticated, (request, response) => {
+    if (request.session.user.role === "admin") {
+        return response.redirect("/admin");
+    } 
+    response.render("landing", { user: request.session.user });
     
+});
+
+// GET /admin - page redirect for admin users... 
+app.get("/admin", isAuthenticated, isAdmin, (req, res) => {
+    res.render("admin", { users: USERS});
+})
+
+// Logout... 
+app.get("/logout", (req, res) => {
+    // Desroy the session... 
+    req.session.destroy((err) => {
+        if (err) {
+            console.error("Error Ending Session:", err);
+            return res.redirect("/landing"); // if error, go back to landing. 
+        }
+        res.redirect("/"); // To home page after succesfuly loging out. 
+    });
 });
 
 console.log(USERS);
