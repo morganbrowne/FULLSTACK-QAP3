@@ -3,6 +3,8 @@ const path = require("path");
 const session = require("express-session");
 const bcrypt = require('bcrypt');
 const { request } = require("http");
+// const isMatch = await bcrypt.compare(inputPassword, storedHashedPassword);
+// if (!isMatch) {}
 
 const app = express();
 const PORT = 3000;
@@ -40,6 +42,14 @@ const USERS = [
     },
 ];
 
+// USERS.push({
+//     id: USERS.length + 1,
+//     username, 
+//     email,
+//     password: hashedPassword,
+//     role: "user"
+// });
+
 // Authentication Middleware... 
 
 const isAuthenticated = (req, res, next) => {
@@ -66,7 +76,7 @@ app.get("/login", (request, response) => {
 // POST /login - Allows a user to login
 app.post("/login", (request, response) => {
     const { email, password } = request.body;
-    const user = USERS.find((u) => u.email === email);
+    const user = USERS.find(user => user.email === email);
 
     if (!user || !bcrypt.compareSync(password, user.password)) {
         request.session.user = user;
@@ -86,7 +96,7 @@ app.get("/signup", (request, response) => {
 });
 
 // POST /signup - Allows a user to signup
-app.post("/signup", (request, response) => {
+app.post("/signup", async(request, response) => {
     const { username, email, password} = request.body;
 
     if (!username || !email || !password ) {
@@ -98,13 +108,27 @@ app.post("/signup", (request, response) => {
     if (userExists) {
         return response.render("Signup", {error: "Email is already in use."});
     }
-    //Hash passwords with bcrypt... 
-    const hashedPassword = bcrypt.hashSync(password, SALT_ROUNDS);
-    USERS.push({ id: USERS.length +1, username, email, password: hashedPassword, role: "user" });
 
-    response.redirect("/login");
+    try {
+        //Hash passwords with bcrypt... 
+        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+        USERS.push({ 
+            id: USERS.length +1, 
+            username, 
+            email, 
+            password: 
+            hashedPassword, 
+            role: "user" });
 
+          // go to login page after signing up...
+          response.redirect("/login");
+    } catch (err) {
+        console.error("Error hashing passowrd:", err);
+        response.render("signup", {error: "Error occurred, please try again. "});
+    }
 });
+
+// response.redirect("/login");
 
 // GET / - Render index page or redirect to landing if logged in
 app.get("/", (request, response) => {
