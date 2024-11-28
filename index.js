@@ -74,19 +74,23 @@ app.get("/login", (request, response) => {
 });
 
 // POST /login - Allows a user to login
-app.post("/login", (request, response) => {
+app.post("/login", async (request, response) => {
     const { email, password } = request.body;
-    const user = USERS.find(user => user.email === email);
+    const user = USERS.find((u) => u.email === email);
 
-    if (!user || !bcrypt.compareSync(password, user.password)) {
-        request.session.user = user;
-        return response.redirect("landing");
-        //return response.render("login", {error: "Invalid email or pssword"});
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+        //request.session.user = user;
+        //return response.redirect("landing");
+        return response.render("login", {error: "Invalid email or pssword"});
     }
-    response.render("login", {error: "Invalid email or password"});
+    //response.render("login", {error: "Invalid email or password"});
 
-    // request.session.user = {id: user.id, username: user.username, role: user.role };
+    request.session.user = {id: user.id, username: user.username, role: user.role };
     // response.redirect("/landing");
+    if (user.role === "admin") {
+        return response.redirect("/adminLanding");
+    }
+    response.redirect("/landing")
 
 });
 
@@ -100,13 +104,13 @@ app.post("/signup", async(request, response) => {
     const { username, email, password} = request.body;
 
     if (!username || !email || !password ) {
-        return response.render("Signup", {error: "All feilds required to Sign Up"});
+        return response.render("signup", {error: "All feilds required to Sign Up"});
     }
     
     // added userExists for duplicate emails... 
     const userExists = USERS.find((u) => u.email === email);
     if (userExists) {
-        return response.render("Signup", {error: "Email is already in use."});
+        return response.render("signup", {error: "Email is already in use."});
     }
 
     try {
@@ -121,11 +125,14 @@ app.post("/signup", async(request, response) => {
             role: "user" });
 
           // go to login page after signing up...
-          response.redirect("/login");
+     
     } catch (err) {
         console.error("Error hashing passowrd:", err);
         response.render("signup", {error: "Error occurred, please try again. "});
     }
+    response.redirect("/login");
+    console.log("New user registered:", USERS);
+
 });
 
 // response.redirect("/login");
@@ -147,10 +154,6 @@ app.get("/landing", isAuthenticated, (request, response) => {
     
 });
 
-// GET /admin - page redirect for admin users... 
-app.get("/admin", isAuthenticated, isAdmin, (req, res) => {
-    res.render("admin", { users: USERS});
-})
 
 // Logout... 
 app.get("/logout", (req, res) => {

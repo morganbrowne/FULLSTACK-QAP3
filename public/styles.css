@@ -1,5 +1,5 @@
 body {
-    background: linear-gradient(90deg, rgba(93,142,251,1) 0%, rgba(93,142,251,1) 50%, rgba(0,212,255,1) 100%);
+    background: linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(0,0,0,0.30) 50%, rgba(0,0,0,1) 100%);
     height: 100%;
     padding: 0px;
     margin: 0px;
@@ -85,4 +85,53 @@ body {
 .main-content .index-button-container button {
     font-size: 25px;
     padding: 10px;
+}
+
+.h1-container {
+    margin-top: 50px;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+    border-radius: 8px;
+
+}
+.h1-container h1 {
+    padding: 0px 20px 0px 20px;
+}
+
+
+
+
+a {
+    flex: 1;
+    text-decoration: none;
+    text-align: center;
+    line-height: 3;
+    color: white;
+    background: white;
+  
+    border-radius: 8px;
+    padding: 10px 15px;
+    transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+    margin-top: 50px;
+}
+
+a:link,
+a:visited {
+    background: linear-gradient(90deg, rgba(0,0,0,0.30) 0%, rgba(0,0,0,1) 50%, rgba(0,0,0,0.30) 100%);
+}
+
+a:hover {
+    background: lightgray;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: scale(1.02); /* Slight enlargement on hover */
+}
+
+a:focus {
+    outline: 2px solid darkred;
+    outline-offset: 2px;
+}
+
+a:active {
+    background: darkred;
+    color: white;
+    font-weight: bold;
 }

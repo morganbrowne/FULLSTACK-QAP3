@@ -1,4 +1,6 @@
 <%- include('partials/header', { title: "Welcome" }) %>
-<h1>Welcome, <%= user.username %>!</h1>
+<div class="h1-container">
+<h1>Welcome <%= user.username %>, You've made it back.</h1>
+</div>
 <a href="/logout">Logout</a>
 <%- include('partials/footer') %>
