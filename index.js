@@ -28,9 +28,7 @@ const USERS = [
         id: 1,
         username: "AdminUser",
         email: "admin@example.com",
-        password: bcrypt.hashSync("admin123", SALT_ROUNDS), //In a database, you'd just store the hashes, but for 
-                                                            // our purposes we'll hash these existing users when the 
-                                                            // app loads
+        password: bcrypt.hashSync("admin123", SALT_ROUNDS), 
         role: "admin",
     },
     {
@@ -42,13 +40,6 @@ const USERS = [
     },
 ];
 
-// USERS.push({
-//     id: USERS.length + 1,
-//     username, 
-//     email,
-//     password: hashedPassword,
-//     role: "user"
-// });
 
 // Authentication Middleware... 
 
@@ -64,7 +55,7 @@ const isAdmin = (req, res, next) => {
 
 // Admin Route for adminLanding.ejs... 
 
-app.get("/admin", isAuthenticated, isAdmin, (req, res) => {
+app.get("/adminLanding", isAuthenticated, isAdmin, (req, res) => {
     res.render("adminLanding", { users: USERS});
 });
 
@@ -76,22 +67,22 @@ app.get("/login", (request, response) => {
 // POST /login - Allows a user to login
 app.post("/login", async (request, response) => {
     const { email, password } = request.body;
-    const user = USERS.find((u) => u.email === email);
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-        //request.session.user = user;
-        //return response.redirect("landing");
-        return response.render("login", {error: "Invalid email or pssword"});
+    const user = USERS.find((u) => u.email === email);
+    if (!user) {
+        console.error("No user found with email:", email);
+        return response.render("login", {error: "Invalid Email or password "});
     }
+    // if (!user || !(await bcrypt.compare(password, user.password))) {
+      
+    //     return response.render("login", {error: "Invalid email or pssword"});
+    // }
     //response.render("login", {error: "Invalid email or password"});
 
     request.session.user = {id: user.id, username: user.username, role: user.role };
     // response.redirect("/landing");
-    if (user.role === "admin") {
-        return response.redirect("/adminLanding");
-    }
+    if (user.role === "admin") return response.redirect("/adminLanding");
     response.redirect("/landing")
-
 });
 
 // GET /signup - Render signup form
